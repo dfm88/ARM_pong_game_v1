@@ -101,7 +101,7 @@ void TIMER0_IRQHandler (void)
             }
             //if ball is moving VERTICALLY and Vertical speed is not Elapsed
             if (ball.v_direc && ball.v_speed){
-                isColliding = is_colliding(ball, 'v');
+                isColliding = is_colligit commit -m ding(ball, 'v');
                 if(isColliding) { 
                     ball.h_speed = previous_h_speed;
                     ball.v_speed = previous_v_speed;
