@@ -15,7 +15,7 @@
 **
 ** Descriptions:		Enable timer
 **
-** parameters:			timer number: 0 or 1
+** parameters:			timer number: 0 or 1 or 2
 ** Returned value:		None
 **
 ******************************************************************************/
@@ -25,9 +25,13 @@ void enable_timer( uint8_t timer_num )
   {
 	LPC_TIM0->TCR = 1;
   }
-  else
+  else if (timer_num == 1)
   {
 	LPC_TIM1->TCR = 1;
+  }
+  else if (timer_num == 2) 
+  {
+	LPC_TIM2->TCR = 1;
   }
   return;
 }
@@ -37,7 +41,7 @@ void enable_timer( uint8_t timer_num )
 **
 ** Descriptions:		Disable timer
 **
-** parameters:			timer number: 0 or 1
+** parameters:			timer number: 0 or 1 or 2
 ** Returned value:		None
 **
 ******************************************************************************/
@@ -47,9 +51,13 @@ void disable_timer( uint8_t timer_num )
   {
 	LPC_TIM0->TCR = 0;
   }
-  else
+  else if (timer_num == 1)
   {
 	LPC_TIM1->TCR = 0;
+  }
+  else if (timer_num == 2) 
+  {
+	LPC_TIM2->TCR = 0;
   }
   return;
 }
@@ -59,7 +67,7 @@ void disable_timer( uint8_t timer_num )
 **
 ** Descriptions:		Reset timer
 **
-** parameters:			timer number: 0 or 1
+** parameters:			timer number: 0 or 1 or 2
 ** Returned value:		None
 **
 ******************************************************************************/
@@ -73,86 +81,107 @@ void reset_timer( uint8_t timer_num )
 	regVal |= 0x02;
 	LPC_TIM0->TCR = regVal;
   }
-  else
+  else if (timer_num == 0)
   {
 	regVal = LPC_TIM1->TCR;
 	regVal |= 0x02;
 	LPC_TIM1->TCR = regVal;
   }
+  else if (timer_num == 2) 
+  {
+	regVal = LPC_TIM2->TCR;
+	regVal |= 0x02;
+	LPC_TIM2->TCR = regVal;
+  }
   return;
 }
 
-uint32_t init_timer ( uint8_t timer_num, uint32_t TimerInterval )
+
+//XXX funzione estesa 
+uint32_t init_timer ( uint8_t timer_num, uint32_t Prescalar, uint8_t MatchReg, uint8_t SRImatchReg, uint32_t TimerInterval )
 {
-  if ( timer_num == 0 )
-  {
-	LPC_TIM0->MR0 = TimerInterval;
+    if ( timer_num == 0 )
+    {
+		//XXX assegno al Timer0 il valore del Prescaler
+		LPC_TIM0->PR = Prescalar;
+		
+		//XXX se viene passato il MatchRegister 0 assegno al suo registro
+		//l'intervallo di tempo passato dall'utente
+		if(MatchReg==0) {			
+			LPC_TIM0->MR0 = TimerInterval;		
+			//devo shiftare il settaggio del Stop-Reset-Interrupt a 
+			//seconda del MR che sto considerando (vedi slide Esercizio1)
+			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;
+			
+		} // e cos� via a seconda del valore del Match Register
+			else if(MatchReg==1) {
+			LPC_TIM0->MR1 = TimerInterval;		
+			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;
+		} else if(MatchReg==2) {
+			LPC_TIM0->MR2 = TimerInterval;		 
+			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;			
+		} else if(MatchReg==3) {
+			LPC_TIM0->MR3 = TimerInterval;		 
+			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;			
+		}
+		//XXX abilito l'interruzione del timer in questione
+		// in questo caso lo 0 e ne setto la priorit�
+		//LPC_TIM0->PR = 20;
+		NVIC_EnableIRQ(TIMER0_IRQn);
+		//NVIC_SetPriority(TIMER0_IRQn, 4);		/* less priority than buttons */
+		NVIC_SetPriority(TIMER0_IRQn, 0);		/* more priority than buttons */
+		return (1);
+    }
+	//XXX ripetiamo quanto sopra abche per il timer 1
+    else if ( timer_num == 1 )
+    {
+		LPC_TIM1->PR = Prescalar;
 
-//*** <<< Use Configuration Wizard in Context Menu >>> ***
-// <h> timer0 MCR
-//   <e.0> MR0I
-//	 <i> 1 Interrupt on MR0: an interrupt is generated when MR0 matches the value in the TC. 0
-//	 <i> 0 This interrupt is disabled
-//   </e>
-//   <e.1> MR0R
-//	 <i> 1 Reset on MR0: the TC will be reset if MR0 matches it.
-//	 <i> 0 Feature disabled.
-//   </e>
-//   <e.2> MR0S
-//	 <i> 1 Stop on MR0: the TC and PC will be stopped and TCR[0] will be set to 0 if MR0 matches the TC
-//	 <i> 0 Feature disabled.
-//   </e>
-//   <e.3> MR1I
-//	 <i> 1 Interrupt on MR1: an interrupt is generated when MR0 matches the value in the TC. 0
-//	 <i> 0 This interrupt is disabled
-//   </e>
-//   <e.4> MR1R
-//	 <i> 1 Reset on MR1: the TC will be reset if MR0 matches it.
-//	 <i> 0 Feature disabled.
-//   </e>
-//   <e.5> MR1S
-//	 <i> 1 Stop on MR1: the TC and PC will be stopped and TCR[1] will be set to 0 if MR1 matches the TC
-//	 <i> 0 Feature disabled.
-//   </e>
-//   <e.6> MR2I
-//	 <i> 1 Interrupt on MR2: an interrupt is generated when MR2 matches the value in the TC.
-//	 <i> 0 This interrupt is disabled
-//   </e>
-//   <e.7> MR2R
-//	 <i> 1 Reset on MR2: the TC will be reset if MR2 matches it.
-//	 <i> 0 Feature disabled.
-//   </e>
-//   <e.8> MR2S
-//	 <i> 1 Stop on MR2: the TC and PC will be stopped and TCR[2] will be set to 0 if MR2 matches the TC
-//	 <i> 0 Feature disabled.
-//   </e>
-//   <e.9> MR3I
-//	 <i> 1 Interrupt on MR3: an interrupt is generated when MR3 matches the value in the TC.
-//	 <i> 0 This interrupt is disabled
-//   </e>
-//   <e.10> MR3R
-//	 <i> 1 Reset on MR3: the TC will be reset if MR3 matches it.
-//	 <i> 0 Feature disabled.
-//   </e>
-//   <e.11> MR3S
-//	 <i> 1 Stop on MR3: the TC and PC will be stopped and TCR[3] will be set to 0 if MR3 matches the TC
-//	 <i> 0 Feature disabled.
-//   </e>
-	LPC_TIM0->MCR = 3;
-// </h>
-//*** <<< end of configuration section >>>    ***
+		if(MatchReg==0) {			
+			LPC_TIM1->MR0 = TimerInterval;		
+			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;		
+		} else if(MatchReg==1) {
+			LPC_TIM1->MR1 = TimerInterval;		
+			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;
+		} else if(MatchReg==2) {
+			LPC_TIM1->MR2 = TimerInterval;		 
+			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;			
+		} else if(MatchReg==3) {
+			LPC_TIM1->MR3 = TimerInterval;		 
+			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;			
+		}			
 
-	NVIC_EnableIRQ(TIMER0_IRQn);
-	return (1);
-  }
-  else if ( timer_num == 1 )
-  {
-	LPC_TIM1->MR0 = TimerInterval;
-	LPC_TIM1->MCR = 3;				/* Interrupt and Reset on MR1 */
+		NVIC_EnableIRQ(TIMER1_IRQn);
+		NVIC_SetPriority(TIMER1_IRQn, 5);	/* less priority than buttons and timer0*/
+		return (1);
+    }
+    else if (timer_num == 2) 
+    {
+	    LPC_SC->PCONP |= (1<<22); //XXX accendo il timer 2
 
-	NVIC_EnableIRQ(TIMER1_IRQn);
-	return (1);
-  }
+		//XXX assegno al Timer2 il valore del Prescaler
+		LPC_TIM2->PR = Prescalar;
+			
+		//XXX se viene passato il MatchRegister 0 assegno al suo registro
+		//l'intervallo di tempo passato dall'utente
+		if(MatchReg==0) {			
+			LPC_TIM2->MR0 = TimerInterval;		
+			//devo shiftare il settaggio del Stop-Reset-Interrupt a 
+			//seconda del MR che sto considerando
+			LPC_TIM2->MCR |= SRImatchReg << 3*MatchReg;
+		} // e cos� via a seconda del valore del Match Register
+			else if(MatchReg==1) {
+			LPC_TIM2->MR1 = TimerInterval;		
+			LPC_TIM2->MCR |= SRImatchReg << 3*MatchReg;
+		} 
+		//XXX abilito l'interruzione del timer in questione
+		// in questo caso il 2 e ne setto la priorit�
+		//LPC_TIM0->PR = 20;
+		NVIC_EnableIRQ(TIMER2_IRQn);
+		//NVIC_SetPriority(TIMER0_IRQn, 4);		/* less priority than buttons */
+		NVIC_SetPriority(TIMER2_IRQn, 0);		/* more priority than buttons */
+		return (1);
+    }
   return (0);
 }
 
