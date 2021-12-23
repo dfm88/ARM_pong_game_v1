@@ -25,6 +25,7 @@
 #include "GLCD/GLCD.h" 
 #include "TouchPanel/TouchPanel.h"
 #include "timer/timer.h"
+#include "RIT/RIT.h"
 #include "game/game.h"
 
 #define SIMULATOR 1
@@ -43,12 +44,7 @@ int main(void)
 	int i=0;
   SystemInit();  												/* System Initialization (i.e., PLL)  */
 	
-  LCD_Initialization();
-	
-  
-	TP_Init();
-	//TouchPanel_Calibrate();
-	
+	  LCD_Initialization();
 	LCD_Clear(Black);
 
 	ball.posX = 7;
@@ -88,6 +84,12 @@ int main(void)
 		//roof wall
 		LCD_DrawLine(5, i, 235, i, Red);
 	}
+	
+	
+
+  	init_RIT(0x004C4B40);									/* RIT Initialization 50 msec       	*/
+	enable_RIT();													/* RIT enabled												*/
+	ADC_init();														/* ADC Initialization									*/
 	
 
 
