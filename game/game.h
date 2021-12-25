@@ -21,6 +21,8 @@ extern struct struct_paddle paddle;
 
 void GAME_init(void);
 
+void move_paddle(unsigned short);
+
 void move_ball(struct struct_ball ball);
 
 int is_colliding(struct struct_ball ball, int8_t direction);
