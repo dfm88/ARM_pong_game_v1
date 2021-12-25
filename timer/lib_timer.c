@@ -19,21 +19,21 @@
 ** Returned value:		None
 **
 ******************************************************************************/
-void enable_timer( uint8_t timer_num )
+void enable_timer(uint8_t timer_num)
 {
-  if ( timer_num == 0 )
-  {
-	LPC_TIM0->TCR = 1;
-  }
-  else if (timer_num == 1)
-  {
-	LPC_TIM1->TCR = 1;
-  }
-  else if (timer_num == 2) 
-  {
-	LPC_TIM2->TCR = 1;
-  }
-  return;
+	if (timer_num == 0)
+	{
+		LPC_TIM0->TCR = 1;
+	}
+	else if (timer_num == 1)
+	{
+		LPC_TIM1->TCR = 1;
+	}
+	else if (timer_num == 2)
+	{
+		LPC_TIM2->TCR = 1;
+	}
+	return;
 }
 
 /******************************************************************************
@@ -45,21 +45,21 @@ void enable_timer( uint8_t timer_num )
 ** Returned value:		None
 **
 ******************************************************************************/
-void disable_timer( uint8_t timer_num )
+void disable_timer(uint8_t timer_num)
 {
-  if ( timer_num == 0 )
-  {
-	LPC_TIM0->TCR = 0;
-  }
-  else if (timer_num == 1)
-  {
-	LPC_TIM1->TCR = 0;
-  }
-  else if (timer_num == 2) 
-  {
-	LPC_TIM2->TCR = 0;
-  }
-  return;
+	if (timer_num == 0)
+	{
+		LPC_TIM0->TCR = 0;
+	}
+	else if (timer_num == 1)
+	{
+		LPC_TIM1->TCR = 0;
+	}
+	else if (timer_num == 2)
+	{
+		LPC_TIM2->TCR = 0;
+	}
+	return;
 }
 
 /******************************************************************************
@@ -71,118 +71,132 @@ void disable_timer( uint8_t timer_num )
 ** Returned value:		None
 **
 ******************************************************************************/
-void reset_timer( uint8_t timer_num )
+void reset_timer(uint8_t timer_num)
 {
-  uint32_t regVal;
+	uint32_t regVal;
 
-  if ( timer_num == 0 )
-  {
-	regVal = LPC_TIM0->TCR;
-	regVal |= 0x02;
-	LPC_TIM0->TCR = regVal;
-  }
-  else if (timer_num == 0)
-  {
-	regVal = LPC_TIM1->TCR;
-	regVal |= 0x02;
-	LPC_TIM1->TCR = regVal;
-  }
-  else if (timer_num == 2) 
-  {
-	regVal = LPC_TIM2->TCR;
-	regVal |= 0x02;
-	LPC_TIM2->TCR = regVal;
-  }
-  return;
+	if (timer_num == 0)
+	{
+		regVal = LPC_TIM0->TCR;
+		regVal |= 0x02;
+		LPC_TIM0->TCR = regVal;
+	}
+	else if (timer_num == 0)
+	{
+		regVal = LPC_TIM1->TCR;
+		regVal |= 0x02;
+		LPC_TIM1->TCR = regVal;
+	}
+	else if (timer_num == 2)
+	{
+		regVal = LPC_TIM2->TCR;
+		regVal |= 0x02;
+		LPC_TIM2->TCR = regVal;
+	}
+	return;
 }
 
-
-//XXX funzione estesa 
-uint32_t init_timer ( uint8_t timer_num, uint32_t Prescalar, uint8_t MatchReg, uint8_t SRImatchReg, uint32_t TimerInterval )
+// XXX funzione estesa
+uint32_t init_timer(uint8_t timer_num, uint32_t Prescalar, uint8_t MatchReg, uint8_t SRImatchReg, uint32_t TimerInterval)
 {
-    if ( timer_num == 0 )
-    {
-		//XXX assegno al Timer0 il valore del Prescaler
+	if (timer_num == 0)
+	{
+		// XXX assegno al Timer0 il valore del Prescaler
 		LPC_TIM0->PR = Prescalar;
-		
-		//XXX se viene passato il MatchRegister 0 assegno al suo registro
-		//l'intervallo di tempo passato dall'utente
-		if(MatchReg==0) {			
-			LPC_TIM0->MR0 = TimerInterval;		
-			//devo shiftare il settaggio del Stop-Reset-Interrupt a 
-			//seconda del MR che sto considerando (vedi slide Esercizio1)
-			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;
-			
+
+		// XXX se viene passato il MatchRegister 0 assegno al suo registro
+		// l'intervallo di tempo passato dall'utente
+		if (MatchReg == 0)
+		{
+			LPC_TIM0->MR0 = TimerInterval;
+			// devo shiftare il settaggio del Stop-Reset-Interrupt a
+			// seconda del MR che sto considerando (vedi slide Esercizio1)
+			LPC_TIM0->MCR |= SRImatchReg << 3 * MatchReg;
+
 		} // e cos� via a seconda del valore del Match Register
-			else if(MatchReg==1) {
-			LPC_TIM0->MR1 = TimerInterval;		
-			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;
-		} else if(MatchReg==2) {
-			LPC_TIM0->MR2 = TimerInterval;		 
-			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;			
-		} else if(MatchReg==3) {
-			LPC_TIM0->MR3 = TimerInterval;		 
-			LPC_TIM0->MCR |= SRImatchReg << 3*MatchReg;			
+		else if (MatchReg == 1)
+		{
+			LPC_TIM0->MR1 = TimerInterval;
+			LPC_TIM0->MCR |= SRImatchReg << 3 * MatchReg;
 		}
-		//XXX abilito l'interruzione del timer in questione
-		// in questo caso lo 0 e ne setto la priorit�
-		//LPC_TIM0->PR = 20;
+		else if (MatchReg == 2)
+		{
+			LPC_TIM0->MR2 = TimerInterval;
+			LPC_TIM0->MCR |= SRImatchReg << 3 * MatchReg;
+		}
+		else if (MatchReg == 3)
+		{
+			LPC_TIM0->MR3 = TimerInterval;
+			LPC_TIM0->MCR |= SRImatchReg << 3 * MatchReg;
+		}
+		// XXX abilito l'interruzione del timer in questione
+		//  in questo caso lo 0 e ne setto la priorit�
+		// LPC_TIM0->PR = 20;
 		NVIC_EnableIRQ(TIMER0_IRQn);
-		//NVIC_SetPriority(TIMER0_IRQn, 4);		/* less priority than buttons */
-		NVIC_SetPriority(TIMER0_IRQn, 0);		/* more priority than buttons */
+		// NVIC_SetPriority(TIMER0_IRQn, 4);		/* less priority than buttons */
+		NVIC_SetPriority(TIMER0_IRQn, 0); /* more priority than buttons */
 		return (1);
-    }
-	//XXX ripetiamo quanto sopra abche per il timer 1
-    else if ( timer_num == 1 )
-    {
+	}
+	// XXX ripetiamo quanto sopra abche per il timer 1
+	else if (timer_num == 1)
+	{
 		LPC_TIM1->PR = Prescalar;
 
-		if(MatchReg==0) {			
-			LPC_TIM1->MR0 = TimerInterval;		
-			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;		
-		} else if(MatchReg==1) {
-			LPC_TIM1->MR1 = TimerInterval;		
-			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;
-		} else if(MatchReg==2) {
-			LPC_TIM1->MR2 = TimerInterval;		 
-			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;			
-		} else if(MatchReg==3) {
-			LPC_TIM1->MR3 = TimerInterval;		 
-			LPC_TIM1->MCR |= SRImatchReg << 3*MatchReg;			
-		}			
+		if (MatchReg == 0)
+		{
+			LPC_TIM1->MR0 = TimerInterval;
+			LPC_TIM1->MCR |= SRImatchReg << 3 * MatchReg;
+		}
+		else if (MatchReg == 1)
+		{
+			LPC_TIM1->MR1 = TimerInterval;
+			LPC_TIM1->MCR |= SRImatchReg << 3 * MatchReg;
+		}
+		else if (MatchReg == 2)
+		{
+			LPC_TIM1->MR2 = TimerInterval;
+			LPC_TIM1->MCR |= SRImatchReg << 3 * MatchReg;
+		}
+		else if (MatchReg == 3)
+		{
+			LPC_TIM1->MR3 = TimerInterval;
+			LPC_TIM1->MCR |= SRImatchReg << 3 * MatchReg;
+		}
 
 		NVIC_EnableIRQ(TIMER1_IRQn);
-		NVIC_SetPriority(TIMER1_IRQn, 5);	/* less priority than buttons and timer0*/
+		NVIC_SetPriority(TIMER1_IRQn, 5); /* less priority than buttons and timer0*/
 		return (1);
-    }
-    else if (timer_num == 2) 
-    {
-	    LPC_SC->PCONP |= (1<<22); //XXX accendo il timer 2
+	}
+	else if (timer_num == 2)
+	{
+		LPC_SC->PCONP |= (1 << 22); // XXX accendo il timer 2
 
-		//XXX assegno al Timer2 il valore del Prescaler
+		// XXX assegno al Timer2 il valore del Prescaler
 		LPC_TIM2->PR = Prescalar;
-			
-		//XXX se viene passato il MatchRegister 0 assegno al suo registro
-		//l'intervallo di tempo passato dall'utente
-		if(MatchReg==0) {			
-			LPC_TIM2->MR0 = TimerInterval;		
-			//devo shiftare il settaggio del Stop-Reset-Interrupt a 
-			//seconda del MR che sto considerando
-			LPC_TIM2->MCR |= SRImatchReg << 3*MatchReg;
+
+		// XXX se viene passato il MatchRegister 0 assegno al suo registro
+		// l'intervallo di tempo passato dall'utente
+		if (MatchReg == 0)
+		{
+			LPC_TIM2->MR0 = TimerInterval;
+			// devo shiftare il settaggio del Stop-Reset-Interrupt a
+			// seconda del MR che sto considerando
+			LPC_TIM2->MCR |= SRImatchReg << 3 * MatchReg;
 		} // e cos� via a seconda del valore del Match Register
-			else if(MatchReg==1) {
-			LPC_TIM2->MR1 = TimerInterval;		
-			LPC_TIM2->MCR |= SRImatchReg << 3*MatchReg;
-		} 
-		//XXX abilito l'interruzione del timer in questione
-		// in questo caso il 2 e ne setto la priorit�
-		//LPC_TIM0->PR = 20;
+		else if (MatchReg == 1)
+		{
+			LPC_TIM2->MR1 = TimerInterval;
+			LPC_TIM2->MCR |= SRImatchReg << 3 * MatchReg;
+		}
+		// XXX abilito l'interruzione del timer in questione
+		//  in questo caso il 2 e ne setto la priorit�
+		// LPC_TIM0->PR = 20;
 		NVIC_EnableIRQ(TIMER2_IRQn);
-		//NVIC_SetPriority(TIMER0_IRQn, 4);		/* less priority than buttons */
-		NVIC_SetPriority(TIMER2_IRQn, 0);		/* more priority than buttons */
+		// NVIC_SetPriority(TIMER0_IRQn, 4);		/* less priority than buttons */
+		NVIC_SetPriority(TIMER2_IRQn, 0); /* more priority than buttons */
 		return (1);
-    }
-  return (0);
+	}
+	return (0);
 }
 
 /******************************************************************************

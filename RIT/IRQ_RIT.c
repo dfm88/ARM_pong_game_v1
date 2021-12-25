@@ -20,15 +20,15 @@
 **
 ******************************************************************************/
 
-int down=0;
+int down = 0;
 
-void RIT_IRQHandler (void)
-{					
-			
+void RIT_IRQHandler(void)
+{
+
 	/* ADC management */
-	ADC_start_conversion();		
-			
-  LPC_RIT->RICTRL |= 0x1;	/* clear interrupt flag */
+	ADC_start_conversion();
+
+	LPC_RIT->RICTRL |= 0x1; /* clear interrupt flag */
 }
 
 /******************************************************************************

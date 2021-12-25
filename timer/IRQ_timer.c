@@ -49,7 +49,7 @@ void TIMER0_IRQHandler(void)
         for (i = 0; i < longer_speed; i++)
         {
 
-            //if ball is moving HORIZONTALLY and Horizontal speed is not lapsed
+            // if ball is moving HORIZONTALLY and Horizontal speed is not lapsed
             if (ball.h_direc && ball.h_speed)
             {
                 isColliding = is_colliding(ball, 'h');
@@ -65,63 +65,78 @@ void TIMER0_IRQHandler(void)
                 }
                 if (ball.h_direc < 0)
                 {
-                    //MOVE horizontal left
-                    //delete horizontal right
+                    // MOVE horizontal left
+                    // delete horizontal right
                     LCD_DrawLine(ball.posX + delta, ball.posY, ball.posX + delta, ball.posY + delta, Black);
-                    //paint horizontal left
+                    // paint horizontal left
                     LCD_DrawLine(ball.posX + ball.h_direc, ball.posY, ball.posX + ball.h_direc, ball.posY + delta, Green);
                 }
                 else
                 {
-                    //MOVE horizontal right
-                    //delete horizontal left
+                    // MOVE horizontal right
+                    // delete horizontal left
                     LCD_DrawLine(ball.posX, ball.posY, ball.posX, ball.posY + delta, Black);
-                    //paint horizontal right
+                    // paint horizontal right
                     LCD_DrawLine(ball.posX + ball.h_direc + delta, ball.posY, ball.posX + ball.h_direc + delta, ball.posY + delta, Green);
                 }
-                //update x
+                // update x
                 ball.posX = ball.posX + ball.h_direc;
-                //decrement horizontal speed
+                // decrement horizontal speed
                 ball.h_speed--;
             }
-            //if ball is moving VERTICALLY and Vertical speed is not Elapsed
+            // if ball is moving VERTICALLY and Vertical speed is not Elapsed
             if (ball.v_direc && ball.v_speed)
             {
                 isColliding = is_colliding(ball, 'v');
                 if (isColliding)
                 {
-                    ball.h_speed = previous_h_speed;
-                    ball.v_speed = previous_v_speed;
-                    ball.v_direc = -ball.v_direc;
-                    // move_ball(ball);
+                    // handle vertical collission..
+                    // ..opposite reflection angle if hits roof (v_direc < 0)
+                    if (ball.v_direc < 0)
+                    {
+                        ball.h_speed = previous_h_speed;
+                        ball.v_speed = previous_v_speed;
+                        ball.v_direc = -ball.v_direc;
+                    }
+                    // ..handle reflection angle if hits paddle (v_direc > 0)
+                    else
+                    {
+                        handle_paddle_collsion();
+                        ball.v_direc = -ball.v_direc;
+                    }
+
+                    /**@todo handle different angles**/
                     LPC_TIM0->IR = 1; /* clear interrupt flag */
                     return;
                 }
                 if (ball.v_direc < 0)
                 {
-                    //MOVE vertical up
-                    //delete vertical down
+                    // MOVE vertical up
+                    // delete vertical down
                     LCD_DrawLine(ball.posX, ball.posY + delta, ball.posX + delta, ball.posY + delta, Black);
-                    //paint vertical up
+                    // paint vertical up
                     LCD_DrawLine(ball.posX, ball.posY + ball.v_direc, ball.posX + delta, ball.posY + ball.v_direc, Green);
                 }
                 else
                 {
-                    //MOVE vertical down
-                    //delete vertical up
+                    // MOVE vertical down
+                    // delete vertical up
                     LCD_DrawLine(ball.posX, ball.posY, ball.posX + delta, ball.posY, Black);
-                    //paint vertical down
+                    // paint vertical down
                     LCD_DrawLine(ball.posX, ball.posY + ball.v_direc + delta, ball.posX + delta, ball.posY + ball.v_direc + delta, Green);
                 }
-                //update y
+                // update y
                 ball.posY = ball.posY + ball.v_direc;
 
                 is_game_over = ball.posY > 278;
-                //decrement vertical speed
+                if (is_game_over)
+                    /**@todo handle Game over**/
+                    break;
+                // decrement vertical speed
                 ball.v_speed--;
             }
 
-            //restart if cycle ended up with no collisions
+            // restart if cycle ended up with no collisions
             if (longer_speed - 1 == i)
             {
                 ball.h_speed = previous_h_speed;

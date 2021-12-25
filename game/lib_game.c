@@ -31,54 +31,191 @@ int is_colliding(struct struct_ball ball, int8_t direction)
     switch (direction)
     {
     case 'h': /* moving horizontally */
+        /**@todo handle wall noise**/
         return current_pos - h_limit == 0;
 
     case 'v': /* moving vertically */
-        //if ball was moving up
+        // if ball was moving up
         if (ball.v_direc < 0)
+            /**@todo handle wall noise**/
             return current_pos - v_limit == 0;
+        // if ball was moving down, check paddle position
         else
-            return current_pos - v_limit == 0;
-        //if ball was moving down there is a collision only if paddle was under the ball
-        /**@todo check paddle position */
+        {
+            // is colliding with paddle high && paddle is under the ball
+            if (current_pos - v_limit == 0)
+            {
+                if ((paddle.posX - 4) <= ball.posX)
+                {
+                    if (ball.posX <= (paddle.posX + 49))
+                    {
+                        /**@todo handle score increase**/
+                        /**@todo handle paddle noise**/
+                        return 1;
+                    }
+                }
+            }
+            return 0;
+        }
 
     default:
         return 0;
     }
 }
 
+void handle_paddle_collsion()
+{
+    // Dichotomic search
+    /**
+     *            Speed change after paddle hit (v vertical, h horizontal, r right, l left))
+     *  --------------------------------------------------------------------------------------------------------------
+     * | hl=4,v=1 | hl=3,v=2 | hl=2,v=3 | hl=1,v=4 | hl=1,v=5 || hr=1,v=5 | hr=1,v=4 | hr=2,v=3 | hr=3,v=2 | hr=4,v=1 |
+     *
+     * |   1-5    |   6-10   |   7-15   |   16-20  |   21-25  ||   25-30  |   31-35  |   36-40  |   41-45  |   46-50  |
+     *  --------------------------------------------------------------------------------------------------------------
+     *                                      Paddle lenght
+     *
+     *  Speed change will be handle by the portion of the pad hit by at least sup(ball_lenght/2)=3 ball pixels
+     */
+
+    /** 1-23 **/
+    if (ball.posX <= (paddle.posX + 22))
+    {
+        ball.h_direc = -1;
+        // 1-13
+        if (ball.posX <= (paddle.posX + 12))
+        {
+            // 1-8
+            if (ball.posX <= (paddle.posX + 7))
+            {
+                // 1-3
+                if (ball.posX <= paddle.posX + 2)
+                {
+                    ball.v_speed = 1;
+                    ball.h_speed = 4;
+                    return;
+                }
+                // 4-8
+                else
+                {
+                    ball.v_speed = 2;
+                    ball.h_speed = 3;
+                    return;
+                }
+            }
+            // 9-13
+            else
+            {
+                ball.v_speed = 3;
+                ball.h_speed = 2;
+                return;
+            }
+        }
+        // 14-23
+        else
+        {
+            // 14-18
+            if (ball.posX <= paddle.posX + 17)
+            {
+                ball.v_speed = 4;
+                ball.h_speed = 1;
+                return;
+            }
+            // 19-23
+            else
+            {
+                ball.v_speed = 5;
+                ball.h_speed = 1;
+                return;
+            }
+        }
+    }
+    /** 24-50 **/
+    else
+    {
+        ball.h_direc = 1;
+        // 39-50
+        if (ball.posX >= paddle.posX + 38)
+        {
+            // 44-50
+            if (ball.posX >= paddle.posX + 43)
+            {
+                ball.v_speed = 1;
+                ball.h_speed = 4;
+                return;
+            }
+            // 39-43
+            else
+            {
+                ball.v_speed = 2;
+                ball.h_speed = 3;
+                return;
+            }
+        }
+        // 24-38
+        else
+        {
+            // 29-38
+            if (ball.posX >= paddle.posX + 28)
+            {
+                // 34-38
+                if (ball.posX >= paddle.posX + 33)
+                {
+                    ball.v_speed = 3;
+                    ball.h_speed = 2;
+                    return;
+                }
+                // 29-33
+                else
+                {
+                    ball.v_speed = 4;
+                    ball.h_speed = 1;
+                    return;
+                }
+            }
+            // 24-28
+            else
+            {
+                ball.v_speed = 5;
+                ball.h_speed = 1;
+                return;
+            }
+        }
+    }
+}
+
 void move_paddle(unsigned short mov)
 {
-
+    uint8_t increment = 0;
+    int8_t dir = 0;
+    uint8_t i = 0;
+    uint8_t delta_del;
+    uint8_t delta_draw;
     // mov == 0-3 move left
     // mov == 4   hold
     // mov == 5-8 move right
 
-    uint8_t increment = 0;
-    int8_t dir = 0;
-    uint8_t i = 0;
-    uint8_t delta;
-
-    dir = mov > 4 ? 1 : -1;
-    delta = dir > 0 ? 0 : 49;
+    dir = mov > 4 ? 1 : -1;        // -1
+    delta_del = dir > 0 ? 0 : 49;  // 49
+    delta_draw = dir > 0 ? 49 : 0; // 0
 
     switch (mov)
     {
     case 0:
     case 8:
-        increment = 5;
+        increment = 14;
         break;
     case 1:
     case 7:
-        increment = 3;
+        increment = 12;
         break;
     case 2:
     case 6:
-        increment = 4;
+        increment = 10;
         break;
     case 3:
     case 5:
-        increment = 2;
+        increment = 8;
         break;
     case 4:
         increment = 0;
@@ -90,14 +227,19 @@ void move_paddle(unsigned short mov)
     {
         if ((dir > 0 && paddle.posX < 188) || (dir < 0 && paddle.posX > 0))
         {
-            //delete line
-            LCD_DrawLine(paddle.posX + (delta * dir + i), paddle.posY, paddle.posX + (delta * dir + i), paddle.posY + 9, Black);
-            //draw line
-            LCD_DrawLine(paddle.posX + (delta * dir + i), paddle.posY, paddle.posX + (delta * dir + i), paddle.posY + 9, Green);
+            // delete line
+            LCD_DrawLine(paddle.posX + (delta_del /* + i*dir*/), paddle.posY, paddle.posX + (delta_del /* + i*dir*/), paddle.posY + 9, Black);
+            // change paddle position
+            paddle.posX = paddle.posX + dir;
+            // draw line
+            LCD_DrawLine(paddle.posX + (delta_draw /* + i*dir*/), paddle.posY, paddle.posX + (delta_draw /* + i*dir*/), paddle.posY + 9, Green);
+        }
+        else
+        {
+            return;
         }
     }
-    // change paddle position
-    paddle.posX = paddle.posX + (increment * dir);
+    return;
 }
 
 void move_ball(struct struct_ball ball)
@@ -111,11 +253,11 @@ void move_ball(struct struct_ball ball)
     while (!is_game_over)
     {
 
-        //calcolo movimento
-        // h_mov = ball.h_speed * ball.h_direc;
-        // v_mov = ball.v_speed * ball.v_direc;
-        // h_mov
-        // v_mov
+        // calcolo movimento
+        //  h_mov = ball.h_speed * ball.h_direc;
+        //  v_mov = ball.v_speed * ball.v_direc;
+        //  h_mov
+        //  v_mov
         previous_h_speed = ball.h_speed;
         previous_v_speed = ball.v_speed;
 
@@ -124,7 +266,7 @@ void move_ball(struct struct_ball ball)
         for (i = 0; i < longer_speed; i++)
         {
 
-            //if ball is moving HORIZONTALLY and Horizontal speed is not lapsed
+            // if ball is moving HORIZONTALLY and Horizontal speed is not lapsed
             if (ball.h_direc && ball.h_speed)
             {
                 /**@todo HANDLE HORIZONTAL COLLISION WITH WALLS AND PADDLE**/
@@ -140,26 +282,26 @@ void move_ball(struct struct_ball ball)
                 }
                 if (ball.h_direc < 0)
                 {
-                    //MOVE horizontal left
-                    //delete horizontal right
+                    // MOVE horizontal left
+                    // delete horizontal right
                     LCD_DrawLine(ball.posX + delta, ball.posY, ball.posX + delta, ball.posY + delta, Red);
-                    //paint horizontal left
+                    // paint horizontal left
                     LCD_DrawLine(ball.posX + ball.h_direc, ball.posY, ball.posX + ball.h_direc, ball.posY + delta, Blue);
                 }
                 else
                 {
-                    //MOVE horizontal right
-                    //delete horizontal left
+                    // MOVE horizontal right
+                    // delete horizontal left
                     LCD_DrawLine(ball.posX, ball.posY, ball.posX, ball.posY + delta, Red);
-                    //paint horizontal right
+                    // paint horizontal right
                     LCD_DrawLine(ball.posX + ball.h_direc + delta, ball.posY, ball.posX + ball.h_direc + delta, ball.posY + delta, Blue);
                 }
-                //update x
+                // update x
                 ball.posX = ball.posX + ball.h_direc;
-                //decrement horizontal speed
+                // decrement horizontal speed
                 ball.h_speed--;
             }
-            //if ball is moving VERTICALLY and Vertical speed is not Elapsed
+            // if ball is moving VERTICALLY and Vertical speed is not Elapsed
             if (ball.v_direc && ball.v_speed)
             {
                 isColliding = is_colliding(ball, 'v');
@@ -173,29 +315,29 @@ void move_ball(struct struct_ball ball)
                 }
                 if (ball.v_direc < 0)
                 {
-                    //MOVE vertical up
-                    //delete vertical down
+                    // MOVE vertical up
+                    // delete vertical down
                     LCD_DrawLine(ball.posX, ball.posY + delta, ball.posX + delta, ball.posY + delta, Red);
-                    //paint vertical up
+                    // paint vertical up
                     LCD_DrawLine(ball.posX, ball.posY + ball.v_direc, ball.posX + delta, ball.posY + ball.v_direc, Blue);
                 }
                 else
                 {
-                    //MOVE vertical down
-                    //delete vertical up
+                    // MOVE vertical down
+                    // delete vertical up
                     LCD_DrawLine(ball.posX, ball.posY, ball.posX + delta, ball.posY, Red);
-                    //paint vertical down
+                    // paint vertical down
                     LCD_DrawLine(ball.posX, ball.posY + ball.v_direc + delta, ball.posX + delta, ball.posY + ball.v_direc + delta, Blue);
                 }
-                //update y
+                // update y
                 ball.posY = ball.posY + ball.v_direc;
 
                 is_game_over = ball.posY > 278;
-                //decrement vertical speed
+                // decrement vertical speed
                 ball.v_speed--;
             }
 
-            //richiamo la funzione se il ciclo � finito senza collisioni
+            // richiamo la funzione se il ciclo � finito senza collisioni
             if (longer_speed - 1 == i)
             {
                 ball.h_speed = previous_h_speed;

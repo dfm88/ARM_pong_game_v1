@@ -11,15 +11,15 @@
 #define __TIMER_H
 
 /* init_timer.c */
-//XXX funzione init timer ridefinita da noi
-// extern uint32_t init_timer( uint8_t timer_num, uint32_t timerInterval );
-extern uint32_t init_timer ( uint8_t timer_num, uint32_t Prescalar, uint8_t MatchReg, uint8_t SRImatchReg, uint32_t TimerInterval );
-extern void enable_timer( uint8_t timer_num );
-extern void disable_timer( uint8_t timer_num );
-extern void reset_timer( uint8_t timer_num );
+// XXX funzione init timer ridefinita da noi
+//  extern uint32_t init_timer( uint8_t timer_num, uint32_t timerInterval );
+extern uint32_t init_timer(uint8_t timer_num, uint32_t Prescalar, uint8_t MatchReg, uint8_t SRImatchReg, uint32_t TimerInterval);
+extern void enable_timer(uint8_t timer_num);
+extern void disable_timer(uint8_t timer_num);
+extern void reset_timer(uint8_t timer_num);
 /* IRQ_timer.c */
-extern void TIMER0_IRQHandler (void);
-extern void TIMER1_IRQHandler (void);
+extern void TIMER0_IRQHandler(void);
+extern void TIMER1_IRQHandler(void);
 
 #endif /* end __TIMER_H */
 /*****************************************************************************

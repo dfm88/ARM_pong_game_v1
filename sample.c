@@ -1,5 +1,5 @@
 /****************************************Copyright (c)****************************************************
-**                                      
+**
 **                                 http://www.powermcu.com
 **
 **--------------File Info---------------------------------------------------------------------------------
@@ -48,18 +48,18 @@ int main(void)
 	LCD_Clear(Black);
 
 	ball.posX = 200;
-	ball.posY = 8;
+	ball.posY = 20;
 	ball.h_direc = -1;
-	ball.v_direc = -1;
+	ball.v_direc = 1;
 	ball.h_speed = 3;
 	ball.v_speed = 1;
 	// prevBall_x_position= 100;
 	// prevBall_y_position= 120;
 
-	//draw ball
-	// for(i=0; i<5; i++) {
-	// 	LCD_DrawLine(100, 120+i, 104, 120+i, Blue);
-	// }
+	// draw ball
+	//  for(i=0; i<5; i++) {
+	//  	LCD_DrawLine(100, 120+i, 104, 120+i, Blue);
+	//  }
 	for (i = 0; i < 5; i++)
 	{
 		LCD_DrawLine(ball.posX, ball.posY + i, ball.posX + 4, ball.posY + i, Green);
@@ -76,14 +76,14 @@ int main(void)
 		LCD_DrawLine(paddle.posX, paddle.posY + i, paddle.posX + 49, paddle.posY + i, Green);
 	}
 
-	//draw walls
+	// draw walls
 	for (i = 0; i < 5; i++)
 	{
-		//left wall
+		// left wall
 		LCD_DrawLine(i, 0, i, 276, Red);
-		//right wall
+		// right wall
 		LCD_DrawLine(235 + i, 0, 235 + i, 276, Red);
-		//roof wall
+		// roof wall
 		LCD_DrawLine(5, i, 235, i, Red);
 	}
 
@@ -91,12 +91,12 @@ int main(void)
 	enable_RIT();		  /* RIT enabled												*/
 	ADC_init();			  /* ADC Initialization									*/
 
-	//GUI_Text(0, 280, (uint8_t *) " touch here : 1 sec to clear  ", Blue, White);
+	// GUI_Text(0, 280, (uint8_t *) " touch here : 1 sec to clear  ", Blue, White);
 
-	//init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
-	//init_timer(0, 0x6108 ); 						  /* 1ms * 25MHz = 25*10^3 = 0x6108 */
-	//init_timer(0, 0x4E2 ); 						    /* 500us * 25MHz = 1.25*10^3 = 0x4E2 */
-	init_timer(0, 0, 0, 3, 0x00003F7A); /* 8us * 25MHz = 200 ~= 0xC8 */ //XXX tempo di refresh
+	// init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
+	// init_timer(0, 0x6108 ); 						  /* 1ms * 25MHz = 25*10^3 = 0x6108 */
+	// init_timer(0, 0x4E2 ); 						    /* 500us * 25MHz = 1.25*10^3 = 0x4E2 */
+	init_timer(0, 0, 0, 3, 0x00003F7A); /* 8us * 25MHz = 200 ~= 0xC8 */ // XXX tempo di refresh
 
 	enable_timer(0);
 
@@ -110,5 +110,5 @@ int main(void)
 }
 
 /*********************************************************************************************************
-      END FILE
+	  END FILE
 *********************************************************************************************************/
