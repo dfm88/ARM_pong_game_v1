@@ -1,17 +1,102 @@
 
 #include "game.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include "lpc17xx.h"
 #include "../GLCD/GLCD.h"
 
 /**
  * @brief  Function that initializes game
  */
+
+
+void draw_score(int value)
+{
+    char text[sizeof(value)];
+    sprintf(text, "%d", value);
+    GUI_Text(7,160, (uint8_t*) text,White,Black); 
+}
+void draw_record(int value)
+{
+    char text[sizeof(value)];
+    sprintf(text, "%d", value);
+    GUI_Text(200,7, (uint8_t*) text,White,Black); 
+}
+
 void GAME_init(void)
 {
+	int i = 0;
+	ball.posX = 230; // TODO change to 230
+	ball.posY = 10; //TODO change to 160
+	ball.h_direc = 1;
+	ball.v_direc = 1;
+	ball.h_speed = 2;
+	ball.v_speed = 2;
 
-    uint16_t t;
-    t = 5;
+    //draw ball
+	for (i = 0; i < 5; i++)
+	{
+		LCD_DrawLine(ball.posX, ball.posY + i, ball.posX + 4, ball.posY + i, Green);
+	}
+
+	// draw paddle (50)
+	paddle.posX = 3;
+	paddle.posY = 277;
+	for (i = 0; i < 10; i++)
+	{
+		LCD_DrawLine(paddle.posX, paddle.posY + i, paddle.posX + 49, paddle.posY + i, Green);
+	}
+
+	// draw walls
+	for (i = 0; i < 5; i++)
+	{
+		// left wall
+		LCD_DrawLine(i, 0, i, 276, Red);
+		// right wall
+		LCD_DrawLine(235 + i, 0, 235 + i, 276, Red);
+		// roof wall
+		LCD_DrawLine(5, i, 235, i, Red);
+	}
+
+    draw_record(record);
+    draw_score(score);
+        //draw score
+    // char text[sizeof(record)];
+    // //draw record
+    // sprintf(text, "%d", record);
+    // GUI_Text(180,20, (uint8_t*) text,White,Black); 
+
+
+    // GUI_Text(10,10, (unsigned char*) "Touch crosshair to calibrate",0xffff,Black); 
+
 }
+
+
+void increase_score()
+{
+    //increase score
+    if(score>=100)
+        score += 10;
+    else
+        score += 5;
+
+    draw_score(score);
+    //increase record
+    if(score>record)
+    {
+        record=score;
+        draw_record(record);
+    }
+}
+
+void game_over(){
+    score = 0;
+    draw_score(score);
+
+}
+
+
+
 
 int is_colliding(struct struct_ball ball, int8_t direction)
 {
@@ -49,13 +134,18 @@ int is_colliding(struct struct_ball ball, int8_t direction)
                 {
                     if (ball.posX <= (paddle.posX + 49))
                     {
-                        /**@todo handle score increase**/
+                        
                         /**@todo handle paddle noise**/
+                        increase_score();
                         return 1;
                     }
                 }
             }
+            else
+            {
             return 0;
+
+            }
         }
 
     default:
@@ -242,8 +332,12 @@ void move_paddle(unsigned short mov)
     return;
 }
 
-void move_ball(struct struct_ball ball)
+void move_ball()
 {
+   // Vertical movement  : 1 = Sud,
+    //					   -1 = North
+    // Horizontal movement: 1 = East,
+    //					   -1 = West
 
     uint8_t previous_h_speed, previous_v_speed, longer_speed, isColliding;
     uint8_t delta = 4;
@@ -253,11 +347,6 @@ void move_ball(struct struct_ball ball)
     while (!is_game_over)
     {
 
-        // calcolo movimento
-        //  h_mov = ball.h_speed * ball.h_direc;
-        //  v_mov = ball.v_speed * ball.v_direc;
-        //  h_mov
-        //  v_mov
         previous_h_speed = ball.h_speed;
         previous_v_speed = ball.v_speed;
 
@@ -269,7 +358,6 @@ void move_ball(struct struct_ball ball)
             // if ball is moving HORIZONTALLY and Horizontal speed is not lapsed
             if (ball.h_direc && ball.h_speed)
             {
-                /**@todo HANDLE HORIZONTAL COLLISION WITH WALLS AND PADDLE**/
                 isColliding = is_colliding(ball, 'h');
 
                 if (isColliding)
@@ -278,23 +366,26 @@ void move_ball(struct struct_ball ball)
                     ball.v_speed = previous_v_speed;
                     ball.h_direc = -ball.h_direc;
                     // move_ball(ball);
+                    // LPC_TIM0->IR = 1; /* clear interrupt flag */
+                    draw_score(score); //just to partially handle score erasing on ball moving hover
+                    draw_record(record); //just to partially handle score erasing on ball moving hover
                     return;
                 }
                 if (ball.h_direc < 0)
                 {
                     // MOVE horizontal left
                     // delete horizontal right
-                    LCD_DrawLine(ball.posX + delta, ball.posY, ball.posX + delta, ball.posY + delta, Red);
+                    LCD_DrawLine(ball.posX + delta, ball.posY, ball.posX + delta, ball.posY + delta, Black);
                     // paint horizontal left
-                    LCD_DrawLine(ball.posX + ball.h_direc, ball.posY, ball.posX + ball.h_direc, ball.posY + delta, Blue);
+                    LCD_DrawLine(ball.posX + ball.h_direc, ball.posY, ball.posX + ball.h_direc, ball.posY + delta, Green);
                 }
                 else
                 {
                     // MOVE horizontal right
                     // delete horizontal left
-                    LCD_DrawLine(ball.posX, ball.posY, ball.posX, ball.posY + delta, Red);
+                    LCD_DrawLine(ball.posX, ball.posY, ball.posX, ball.posY + delta, Black);
                     // paint horizontal right
-                    LCD_DrawLine(ball.posX + ball.h_direc + delta, ball.posY, ball.posX + ball.h_direc + delta, ball.posY + delta, Blue);
+                    LCD_DrawLine(ball.posX + ball.h_direc + delta, ball.posY, ball.posX + ball.h_direc + delta, ball.posY + delta, Green);
                 }
                 // update x
                 ball.posX = ball.posX + ball.h_direc;
@@ -307,42 +398,64 @@ void move_ball(struct struct_ball ball)
                 isColliding = is_colliding(ball, 'v');
                 if (isColliding)
                 {
-                    ball.h_speed = previous_h_speed;
-                    ball.v_speed = previous_v_speed;
-                    ball.v_direc = -ball.v_direc;
-                    // move_ball(ball);
+                    // handle vertical collission..
+                    // ..opposite reflection angle if hits roof (v_direc < 0)
+                    if (ball.v_direc < 0)
+                    {
+                        ball.h_speed = previous_h_speed;
+                        ball.v_speed = previous_v_speed;
+                        ball.v_direc = -ball.v_direc;
+                        
+                    }
+                    // ..handle reflection angle if hits paddle (v_direc > 0)
+                    else
+                    {
+                        handle_paddle_collsion();
+                        ball.v_direc = -ball.v_direc;
+                    }
+
+                    // LPC_TIM0->IR = 1; /* clear interrupt flag */
+                    draw_score(score); //just to partially handle score erasing on ball moving hover
+                    draw_record(record); //just to partially handle score erasing on ball moving hover
                     return;
                 }
                 if (ball.v_direc < 0)
                 {
                     // MOVE vertical up
                     // delete vertical down
-                    LCD_DrawLine(ball.posX, ball.posY + delta, ball.posX + delta, ball.posY + delta, Red);
+                    LCD_DrawLine(ball.posX, ball.posY + delta, ball.posX + delta, ball.posY + delta, Black);
                     // paint vertical up
-                    LCD_DrawLine(ball.posX, ball.posY + ball.v_direc, ball.posX + delta, ball.posY + ball.v_direc, Blue);
+                    LCD_DrawLine(ball.posX, ball.posY + ball.v_direc, ball.posX + delta, ball.posY + ball.v_direc, Green);
                 }
                 else
                 {
                     // MOVE vertical down
                     // delete vertical up
-                    LCD_DrawLine(ball.posX, ball.posY, ball.posX + delta, ball.posY, Red);
+                    LCD_DrawLine(ball.posX, ball.posY, ball.posX + delta, ball.posY, Black);
                     // paint vertical down
-                    LCD_DrawLine(ball.posX, ball.posY + ball.v_direc + delta, ball.posX + delta, ball.posY + ball.v_direc + delta, Blue);
+                    LCD_DrawLine(ball.posX, ball.posY + ball.v_direc + delta, ball.posX + delta, ball.posY + ball.v_direc + delta, Green);
                 }
                 // update y
                 ball.posY = ball.posY + ball.v_direc;
 
                 is_game_over = ball.posY > 278;
+                if (is_game_over)
+                {
+                    /**@todo handle Game over**/
+                    game_over();
+                    break;
+
+                }
                 // decrement vertical speed
                 ball.v_speed--;
             }
 
-            // richiamo la funzione se il ciclo � finito senza collisioni
+            // restart if cycle ended up with no collisions
             if (longer_speed - 1 == i)
             {
                 ball.h_speed = previous_h_speed;
                 ball.v_speed = previous_v_speed;
-                // move_ball(ball);
+                // LPC_TIM0->IR = 1; /* clear interrupt flag */
                 return;
             }
         }

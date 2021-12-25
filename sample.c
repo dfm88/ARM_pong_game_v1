@@ -23,7 +23,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "LPC17xx.h"
 #include "GLCD/GLCD.h"
-#include "TouchPanel/TouchPanel.h"
+#include "button_EXINT/button.h"
 #include "timer/timer.h"
 #include "RIT/RIT.h"
 #include "game/game.h"
@@ -41,64 +41,25 @@ struct struct_paddle paddle;
 
 int main(void)
 {
-	int i = 0;
 	SystemInit(); /* System Initialization (i.e., PLL)  */
 
 	LCD_Initialization();
 	LCD_Clear(Black);
+	BUTTON_init();
 
-	ball.posX = 200;
-	ball.posY = 20;
-	ball.h_direc = -1;
-	ball.v_direc = 1;
-	ball.h_speed = 3;
-	ball.v_speed = 1;
-	// prevBall_x_position= 100;
-	// prevBall_y_position= 120;
+	//init_RIT(0x004C4B40); /* RIT Initialization 50 msec       	*/
 
-	// draw ball
-	//  for(i=0; i<5; i++) {
-	//  	LCD_DrawLine(100, 120+i, 104, 120+i, Blue);
-	//  }
-	for (i = 0; i < 5; i++)
-	{
-		LCD_DrawLine(ball.posX, ball.posY + i, ball.posX + 4, ball.posY + i, Green);
-	}
-
-	// TP_DrawPoint(50, 70);
-	// TP_DrawPoint(51, 71);
-
-	// draw paddle (50)
-	paddle.posX = 3;
-	paddle.posY = 277;
-	for (i = 0; i < 10; i++)
-	{
-		LCD_DrawLine(paddle.posX, paddle.posY + i, paddle.posX + 49, paddle.posY + i, Green);
-	}
-
-	// draw walls
-	for (i = 0; i < 5; i++)
-	{
-		// left wall
-		LCD_DrawLine(i, 0, i, 276, Red);
-		// right wall
-		LCD_DrawLine(235 + i, 0, 235 + i, 276, Red);
-		// roof wall
-		LCD_DrawLine(5, i, 235, i, Red);
-	}
-
-	init_RIT(0x004C4B40); /* RIT Initialization 50 msec       	*/
-	enable_RIT();		  /* RIT enabled												*/
-	ADC_init();			  /* ADC Initialization									*/
-
-	// GUI_Text(0, 280, (uint8_t *) " touch here : 1 sec to clear  ", Blue, White);
 
 	// init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
 	// init_timer(0, 0x6108 ); 						  /* 1ms * 25MHz = 25*10^3 = 0x6108 */
 	// init_timer(0, 0x4E2 ); 						    /* 500us * 25MHz = 1.25*10^3 = 0x4E2 */
+	GAME_init();
 	init_timer(0, 0, 0, 3, 0x00003F7A); /* 8us * 25MHz = 200 ~= 0xC8 */ // XXX tempo di refresh
+	//todo try 50 ms
+	init_RIT(0x004C4B40*2); /* RIT Initialization 50 msec       	*/
+	enable_RIT();		  /* RIT enabled												*/
 
-	enable_timer(0);
+	// enable_timer(0);
 
 	LPC_SC->PCON |= 0x1; /* power-down	mode										*/
 	LPC_SC->PCON &= ~(0x2);
