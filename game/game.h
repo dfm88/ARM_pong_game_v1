@@ -1,7 +1,8 @@
 #include "LPC17xx.h"
 
 static int record = 100;
-static int score = 95;
+static int score = 100;
+static uint8_t is_game_over = 0;
 struct struct_ball
 {
 	uint8_t h_speed;
@@ -27,6 +28,12 @@ void handle_paddle_collsion(void);
 void move_paddle(unsigned short);
 void game_over(void);
 void increase_score(void);
+void pause_game(void);
+void resume_game(void);
+void restart_game(void);
+void initialize_ball(void);
+void draw_ball(uint16_t, uint16_t);
+void delete_ball(void);
 
 void move_ball(void);
 

@@ -4,99 +4,144 @@
 #include <stdlib.h>
 #include "lpc17xx.h"
 #include "../GLCD/GLCD.h"
+#include "../timer/timer.h"
+#include "../RIT/RIT.h"
+#include "../adc/adc.h"
 
 /**
  * @brief  Function that initializes game
  */
 
-
 void draw_score(int value)
 {
     char text[sizeof(value)];
+	GUI_Text(7, 160, (unsigned char*) text, Black, Black);
     sprintf(text, "%d", value);
-    GUI_Text(7,160, (uint8_t*) text,White,Black); 
+    GUI_Text(7, 160, (uint8_t *)text, White, Black);
 }
 void draw_record(int value)
 {
     char text[sizeof(value)];
     sprintf(text, "%d", value);
-    GUI_Text(200,7, (uint8_t*) text,White,Black); 
+    GUI_Text(200, 7, (uint8_t *)text, White, Black);
+}
+
+void draw_ball(uint16_t x, uint16_t y)
+{
+    int i = 0;
+	ball.posX = x;
+    ball.posY = y;
+    for (i = 0; i < 5; i++)
+    {
+        LCD_DrawLine(ball.posX, ball.posY + i, ball.posX + 4, ball.posY + i, Green);
+    }
+}
+
+void initialize_ball() {
+    ball.posX = 230; // TODO change to 230
+    ball.posY = 10;  // TODO change to 160
+    ball.h_direc = 1;
+    ball.v_direc = 1;
+    ball.h_speed = 2;
+    ball.v_speed = 2;
+
+    draw_ball(ball.posX, ball.posY);
+
+}
+
+void delete_ball()
+{
+    int i=0;
+    for (i = 0; i < 5; i++)
+    {
+        LCD_DrawLine(ball.posX, ball.posY + i, ball.posX + 4, ball.posY + i, Black);
+    }
 }
 
 void GAME_init(void)
 {
-	int i = 0;
-	ball.posX = 230; // TODO change to 230
-	ball.posY = 10; //TODO change to 160
-	ball.h_direc = 1;
-	ball.v_direc = 1;
-	ball.h_speed = 2;
-	ball.v_speed = 2;
+    int i = 0;
 
-    //draw ball
-	for (i = 0; i < 5; i++)
-	{
-		LCD_DrawLine(ball.posX, ball.posY + i, ball.posX + 4, ball.posY + i, Green);
-	}
+    initialize_ball();
 
-	// draw paddle (50)
-	paddle.posX = 3;
-	paddle.posY = 277;
-	for (i = 0; i < 10; i++)
-	{
-		LCD_DrawLine(paddle.posX, paddle.posY + i, paddle.posX + 49, paddle.posY + i, Green);
-	}
+    // draw paddle (50)
+    paddle.posX = 3;
+    paddle.posY = 277;
+    for (i = 0; i < 10; i++)
+    {
+        LCD_DrawLine(paddle.posX, paddle.posY + i, paddle.posX + 49, paddle.posY + i, Green);
+    }
 
-	// draw walls
-	for (i = 0; i < 5; i++)
-	{
-		// left wall
-		LCD_DrawLine(i, 0, i, 276, Red);
-		// right wall
-		LCD_DrawLine(235 + i, 0, 235 + i, 276, Red);
-		// roof wall
-		LCD_DrawLine(5, i, 235, i, Red);
-	}
+    // draw walls
+    for (i = 0; i < 5; i++)
+    {
+        // left wall
+        LCD_DrawLine(i, 0, i, 276, Red);
+        // right wall
+        LCD_DrawLine(235 + i, 0, 235 + i, 276, Red);
+        // roof wall
+        LCD_DrawLine(5, i, 235, i, Red);
+    }
 
     draw_record(record);
     draw_score(score);
-        //draw score
+    // draw score
     // char text[sizeof(record)];
     // //draw record
     // sprintf(text, "%d", record);
-    // GUI_Text(180,20, (uint8_t*) text,White,Black); 
+    // GUI_Text(180,20, (uint8_t*) text,White,Black);
 
-
-    // GUI_Text(10,10, (unsigned char*) "Touch crosshair to calibrate",0xffff,Black); 
-
+    // GUI_Text(10,10, (unsigned char*) "Touch crosshair to calibrate",0xffff,Black);
 }
-
 
 void increase_score()
 {
-    //increase score
-    if(score>=100)
+    // increase score
+    if (score >= 100)
         score += 10;
     else
         score += 5;
 
     draw_score(score);
-    //increase record
-    if(score>record)
+    // increase record
+    if (score > record)
     {
-        record=score;
+        record = score;
         draw_record(record);
     }
 }
 
-void game_over(){
+void game_over()
+{
     score = 0;
+    GUI_Text(7, 160, (unsigned char*) "        ", Black, Black);
     draw_score(score);
+    GUI_Text(80, 140, (unsigned char *)"You lose", White, Black);
+    pause_game();
+    delete_ball();
+}
 
+void pause_game()
+{
+    disable_timer(0);
+    ADC_paused();
 }
 
 
+void resume_game()
+{
+    GUI_Text(80, 140, (unsigned char *)"        ", White, Black);
+    is_game_over = 0;
+    enable_timer(0);
+    ADC_resumed();
+}
 
+void restart_game()
+{
+    resume_game();
+    initialize_ball();
+
+}
 
 int is_colliding(struct struct_ball ball, int8_t direction)
 {
@@ -134,7 +179,7 @@ int is_colliding(struct struct_ball ball, int8_t direction)
                 {
                     if (ball.posX <= (paddle.posX + 49))
                     {
-                        
+
                         /**@todo handle paddle noise**/
                         increase_score();
                         return 1;
@@ -143,8 +188,7 @@ int is_colliding(struct struct_ball ball, int8_t direction)
             }
             else
             {
-            return 0;
-
+                return 0;
             }
         }
 
@@ -334,14 +378,13 @@ void move_paddle(unsigned short mov)
 
 void move_ball()
 {
-   // Vertical movement  : 1 = Sud,
+    // Vertical movement  : 1 = Sud,
     //					   -1 = North
     // Horizontal movement: 1 = East,
     //					   -1 = West
 
     uint8_t previous_h_speed, previous_v_speed, longer_speed, isColliding;
     uint8_t delta = 4;
-    uint8_t is_game_over = 0;
     uint8_t i = 0;
 
     while (!is_game_over)
@@ -367,8 +410,8 @@ void move_ball()
                     ball.h_direc = -ball.h_direc;
                     // move_ball(ball);
                     // LPC_TIM0->IR = 1; /* clear interrupt flag */
-                    draw_score(score); //just to partially handle score erasing on ball moving hover
-                    draw_record(record); //just to partially handle score erasing on ball moving hover
+                    draw_score(score);   // just to partially handle score erasing on ball moving hover
+                    draw_record(record); // just to partially handle score erasing on ball moving hover
                     return;
                 }
                 if (ball.h_direc < 0)
@@ -405,7 +448,6 @@ void move_ball()
                         ball.h_speed = previous_h_speed;
                         ball.v_speed = previous_v_speed;
                         ball.v_direc = -ball.v_direc;
-                        
                     }
                     // ..handle reflection angle if hits paddle (v_direc > 0)
                     else
@@ -415,8 +457,8 @@ void move_ball()
                     }
 
                     // LPC_TIM0->IR = 1; /* clear interrupt flag */
-                    draw_score(score); //just to partially handle score erasing on ball moving hover
-                    draw_record(record); //just to partially handle score erasing on ball moving hover
+                    draw_score(score);   // just to partially handle score erasing on ball moving hover
+                    draw_record(record); // just to partially handle score erasing on ball moving hover
                     return;
                 }
                 if (ball.v_direc < 0)
@@ -443,8 +485,8 @@ void move_ball()
                 {
                     /**@todo handle Game over**/
                     game_over();
-                    break;
 
+                    break;
                 }
                 // decrement vertical speed
                 ball.v_speed--;

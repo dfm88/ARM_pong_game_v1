@@ -134,7 +134,7 @@ uint32_t init_timer(uint8_t timer_num, uint32_t Prescalar, uint8_t MatchReg, uin
 		// LPC_TIM0->PR = 20;
 		NVIC_EnableIRQ(TIMER0_IRQn);
 		// NVIC_SetPriority(TIMER0_IRQn, 4);		/* less priority than buttons */
-		NVIC_SetPriority(TIMER0_IRQn, 0); /* more priority than buttons */
+		NVIC_SetPriority(TIMER0_IRQn, 1); /* more priority than buttons */
 		return (1);
 	}
 	// XXX ripetiamo quanto sopra abche per il timer 1

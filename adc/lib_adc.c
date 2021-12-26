@@ -20,6 +20,15 @@ void ADC_init(void)
   NVIC_EnableIRQ(ADC_IRQn); /* enable ADC Interrupt               */
 }
 
+void ADC_paused(void)
+{
+   NVIC_DisableIRQ(ADC_IRQn); /* disable ADC Interrupt               */
+}
+void ADC_resumed(void)
+{
+   NVIC_EnableIRQ(ADC_IRQn); /* enable ADC Interrupt               */
+}
+
 void ADC_start_conversion(void)
 {
   LPC_ADC->ADCR |= (1 << 24); /* Start A/D Conversion 				*/

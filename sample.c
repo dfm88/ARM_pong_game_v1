@@ -54,9 +54,10 @@ int main(void)
 	// init_timer(0, 0x6108 ); 						  /* 1ms * 25MHz = 25*10^3 = 0x6108 */
 	// init_timer(0, 0x4E2 ); 						    /* 500us * 25MHz = 1.25*10^3 = 0x4E2 */
 	GAME_init();
-	init_timer(0, 0, 0, 3, 0x00003F7A); /* 8us * 25MHz = 200 ~= 0xC8 */ // XXX tempo di refresh
+	//init_timer(0, 0, 0, 3, 0x00003F7A); /* 8us * 25MHz = 200 ~= 0xC8 */ // XXX tempo di refresh
+	init_timer(0, 0, 0, 3, 0x00007EF4); //XXX 1,3 ms
 	//todo try 50 ms
-	init_RIT(0x004C4B40*2); /* RIT Initialization 50 msec       	*/
+	init_RIT(0x004C4B40); /* RIT Initialization 50 msec       	*/
 	enable_RIT();		  /* RIT enabled												*/
 
 	// enable_timer(0);
