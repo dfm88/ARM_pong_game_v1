@@ -15,7 +15,7 @@
 void draw_score(int value)
 {
     char text[sizeof(value)];
-	GUI_Text(7, 160, (unsigned char*) text, Black, Black);
+    GUI_Text(7, 160, (unsigned char *)text, Black, Black);
     sprintf(text, "%d", value);
     GUI_Text(7, 160, (uint8_t *)text, White, Black);
 }
@@ -29,7 +29,7 @@ void draw_record(int value)
 void draw_ball(uint16_t x, uint16_t y)
 {
     int i = 0;
-	ball.posX = x;
+    ball.posX = x;
     ball.posY = y;
     for (i = 0; i < 5; i++)
     {
@@ -37,21 +37,22 @@ void draw_ball(uint16_t x, uint16_t y)
     }
 }
 
-void initialize_ball() {
-    ball.posX = 230; // TODO change to 230
-    ball.posY = 10;  // TODO change to 160
+void initialize_ball()
+{
+    NVIC_DisableIRQ(EINT0_IRQn); /* enable Button interrupts			*/
+    ball.posX = 230;
+    ball.posY = 160;
     ball.h_direc = 1;
     ball.v_direc = 1;
     ball.h_speed = 2;
     ball.v_speed = 2;
 
     draw_ball(ball.posX, ball.posY);
-
 }
 
 void delete_ball()
 {
-    int i=0;
+    int i = 0;
     for (i = 0; i < 5; i++)
     {
         LCD_DrawLine(ball.posX, ball.posY + i, ball.posX + 4, ball.posY + i, Black);
@@ -64,8 +65,8 @@ void GAME_init(void)
 
     initialize_ball();
 
-    // draw paddle (50)
-    paddle.posX = 3;
+    // draw paddle
+    paddle.posX = 110;
     paddle.posY = 277;
     for (i = 0; i < 10; i++)
     {
@@ -85,13 +86,6 @@ void GAME_init(void)
 
     draw_record(record);
     draw_score(score);
-    // draw score
-    // char text[sizeof(record)];
-    // //draw record
-    // sprintf(text, "%d", record);
-    // GUI_Text(180,20, (uint8_t*) text,White,Black);
-
-    // GUI_Text(10,10, (unsigned char*) "Touch crosshair to calibrate",0xffff,Black);
 }
 
 void increase_score()
@@ -113,8 +107,9 @@ void increase_score()
 
 void game_over()
 {
+    NVIC_EnableIRQ(EINT0_IRQn); /* enable Button interrupts			*/
     score = 0;
-    GUI_Text(7, 160, (unsigned char*) "        ", Black, Black);
+    GUI_Text(7, 160, (unsigned char *)"        ", Black, Black);
     draw_score(score);
     GUI_Text(80, 140, (unsigned char *)"You lose", White, Black);
     pause_game();
@@ -126,7 +121,6 @@ void pause_game()
     disable_timer(0);
     ADC_paused();
 }
-
 
 void resume_game()
 {
@@ -140,7 +134,13 @@ void restart_game()
 {
     resume_game();
     initialize_ball();
+}
 
+void play_sound(uint16_t k)
+{
+    reset_timer(1);
+    init_timer(1, 0, 0, 3, k);
+    enable_timer(1);
 }
 
 int is_colliding(struct struct_ball ball, int8_t direction)
@@ -161,13 +161,11 @@ int is_colliding(struct struct_ball ball, int8_t direction)
     switch (direction)
     {
     case 'h': /* moving horizontally */
-        /**@todo handle wall noise**/
         return current_pos - h_limit == 0;
 
     case 'v': /* moving vertically */
         // if ball was moving up
         if (ball.v_direc < 0)
-            /**@todo handle wall noise**/
             return current_pos - v_limit == 0;
         // if ball was moving down, check paddle position
         else
@@ -179,8 +177,6 @@ int is_colliding(struct struct_ball ball, int8_t direction)
                 {
                     if (ball.posX <= (paddle.posX + 49))
                     {
-
-                        /**@todo handle paddle noise**/
                         increase_score();
                         return 1;
                     }
@@ -337,19 +333,19 @@ void move_paddle(unsigned short mov)
     {
     case 0:
     case 8:
-        increment = 14;
+        increment = 10;
         break;
     case 1:
     case 7:
-        increment = 12;
+        increment = 8;
         break;
     case 2:
     case 6:
-        increment = 10;
+        increment = 6;
         break;
     case 3:
     case 5:
-        increment = 8;
+        increment = 4;
         break;
     case 4:
         increment = 0;
@@ -389,7 +385,6 @@ void move_ball()
 
     while (!is_game_over)
     {
-
         previous_h_speed = ball.h_speed;
         previous_v_speed = ball.v_speed;
 
@@ -405,11 +400,10 @@ void move_ball()
 
                 if (isColliding)
                 {
+                    play_sound(1890);
                     ball.h_speed = previous_h_speed;
                     ball.v_speed = previous_v_speed;
                     ball.h_direc = -ball.h_direc;
-                    // move_ball(ball);
-                    // LPC_TIM0->IR = 1; /* clear interrupt flag */
                     draw_score(score);   // just to partially handle score erasing on ball moving hover
                     draw_record(record); // just to partially handle score erasing on ball moving hover
                     return;
@@ -445,6 +439,7 @@ void move_ball()
                     // ..opposite reflection angle if hits roof (v_direc < 0)
                     if (ball.v_direc < 0)
                     {
+                        play_sound(1890);
                         ball.h_speed = previous_h_speed;
                         ball.v_speed = previous_v_speed;
                         ball.v_direc = -ball.v_direc;
@@ -452,11 +447,10 @@ void move_ball()
                     // ..handle reflection angle if hits paddle (v_direc > 0)
                     else
                     {
+                        play_sound(1125);
                         handle_paddle_collsion();
                         ball.v_direc = -ball.v_direc;
                     }
-
-                    // LPC_TIM0->IR = 1; /* clear interrupt flag */
                     draw_score(score);   // just to partially handle score erasing on ball moving hover
                     draw_record(record); // just to partially handle score erasing on ball moving hover
                     return;
@@ -483,21 +477,17 @@ void move_ball()
                 is_game_over = ball.posY > 278;
                 if (is_game_over)
                 {
-                    /**@todo handle Game over**/
                     game_over();
-
                     break;
                 }
                 // decrement vertical speed
                 ball.v_speed--;
             }
-
             // restart if cycle ended up with no collisions
             if (longer_speed - 1 == i)
             {
                 ball.h_speed = previous_h_speed;
                 ball.v_speed = previous_v_speed;
-                // LPC_TIM0->IR = 1; /* clear interrupt flag */
                 return;
             }
         }

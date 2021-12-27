@@ -1,8 +1,8 @@
 #include "LPC17xx.h"
 
 static int record = 100;
-static int score = 100;
-static uint8_t is_game_over = 0;
+static int score = 0;
+static uint8_t is_game_over;
 struct struct_ball
 {
 	uint8_t h_speed;

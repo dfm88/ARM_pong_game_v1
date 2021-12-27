@@ -81,7 +81,7 @@ void reset_timer(uint8_t timer_num)
 		regVal |= 0x02;
 		LPC_TIM0->TCR = regVal;
 	}
-	else if (timer_num == 0)
+	else if (timer_num == 1)
 	{
 		regVal = LPC_TIM1->TCR;
 		regVal |= 0x02;
@@ -164,7 +164,7 @@ uint32_t init_timer(uint8_t timer_num, uint32_t Prescalar, uint8_t MatchReg, uin
 		}
 
 		NVIC_EnableIRQ(TIMER1_IRQn);
-		NVIC_SetPriority(TIMER1_IRQn, 5); /* less priority than buttons and timer0*/
+		NVIC_SetPriority(TIMER1_IRQn, 1); /* less priority than buttons and timer0*/
 		return (1);
 	}
 	else if (timer_num == 2)

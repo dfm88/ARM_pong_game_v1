@@ -6,7 +6,6 @@
  *----------------------------------------------------------------------------*/
 void ADC_init(void)
 {
-
   LPC_PINCON->PINSEL3 |= (3UL << 30); /* P1.31 is AD0.5                     */
 
   LPC_SC->PCONP |= (1 << 12); /* Enable power to ADC block          */
@@ -22,11 +21,11 @@ void ADC_init(void)
 
 void ADC_paused(void)
 {
-   NVIC_DisableIRQ(ADC_IRQn); /* disable ADC Interrupt               */
+  NVIC_DisableIRQ(ADC_IRQn); /* disable ADC Interrupt               */
 }
 void ADC_resumed(void)
 {
-   NVIC_EnableIRQ(ADC_IRQn); /* enable ADC Interrupt               */
+  NVIC_EnableIRQ(ADC_IRQn); /* enable ADC Interrupt               */
 }
 
 void ADC_start_conversion(void)

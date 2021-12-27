@@ -40,13 +40,13 @@ void RIT_IRQHandler(void)
 	{
 		if ((LPC_GPIO2->FIOPIN & (1 << 11)) == 0)
 		{ /* KEY1 pressed */
-
 			key1_down++;
 			switch (key1_down)
 			{
 			case 2:					   // RIT is always on due to adc, so i wait 2*50ms to execute button action
 				if (key0_pressed_once) // if I'm restarting the game after a game over
 				{
+					key0_pressed_once = 0;
 					restart_game();
 				}
 				else // if I'm starting the game the first time
@@ -54,7 +54,6 @@ void RIT_IRQHandler(void)
 					ADC_init(); /* ADC Initialization	for paddle movement	*/
 					enable_timer(0);
 				}
-
 				break;
 			default:
 				break;

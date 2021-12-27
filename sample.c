@@ -27,6 +27,7 @@
 #include "timer/timer.h"
 #include "RIT/RIT.h"
 #include "game/game.h"
+#include "dac/dac.h"
 
 #define SIMULATOR 1
 
@@ -42,26 +43,17 @@ struct struct_paddle paddle;
 int main(void)
 {
 	SystemInit(); /* System Initialization (i.e., PLL)  */
-
 	LCD_Initialization();
 	LCD_Clear(Black);
 	BUTTON_init();
-
-	//init_RIT(0x004C4B40); /* RIT Initialization 50 msec       	*/
-
-
-	// init_timer(0, 0x1312D0 ); 						/* 50ms * 25MHz = 1.25*10^6 = 0x1312D0 */
-	// init_timer(0, 0x6108 ); 						  /* 1ms * 25MHz = 25*10^3 = 0x6108 */
-	// init_timer(0, 0x4E2 ); 						    /* 500us * 25MHz = 1.25*10^3 = 0x4E2 */
 	GAME_init();
-	//init_timer(0, 0, 0, 3, 0x00003F7A); /* 8us * 25MHz = 200 ~= 0xC8 */ // XXX tempo di refresh
-	init_timer(0, 0, 0, 3, 0x00007EF4); //XXX 1,3 ms
-	//todo try 50 ms
-	init_RIT(0x004C4B40); /* RIT Initialization 50 msec       	*/
-	enable_RIT();		  /* RIT enabled												*/
+	init_timer(0, 0, 0, 3, 0x00003F7A); /* 8us * 25MHz = 200 ~= 0xC8 */ // XXX tempo di refresh
+	init_RIT(0x004C4B40);												/* RIT Initialization 50 msec       	*/
+	enable_RIT();														/* RIT enabled												*/
+	DAC_init();
+	init_timer(1, 0, 0, 3, 1890);
 
-	// enable_timer(0);
-
+	enable_timer(1);
 	LPC_SC->PCON |= 0x1; /* power-down	mode										*/
 	LPC_SC->PCON &= ~(0x2);
 

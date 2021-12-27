@@ -24,8 +24,6 @@ void ADC_IRQHandler(void)
 {
   unsigned short mov = 0;
   AD_current = ((LPC_ADC->ADGDR >> 4) & 0xFFF); /* Read Conversion Result             */
-
   mov = AD_current * 8 / 0xFFF;
-
   move_paddle(mov);
 }
