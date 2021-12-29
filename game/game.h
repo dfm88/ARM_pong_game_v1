@@ -34,6 +34,8 @@ void restart_game(void);
 void initialize_ball(void);
 void draw_ball(uint16_t, uint16_t);
 void delete_ball(void);
+void start_game(void);
+void prepare_restart_game(void);
 
 void move_ball(void);
 

@@ -86,6 +86,7 @@ void GAME_init(void)
 
     draw_record(record);
     draw_score(score);
+    GUI_Text(40, 140, (unsigned char *)"Press Key1 to start", White, Black);
 }
 
 void increase_score()
@@ -109,9 +110,11 @@ void game_over()
 {
     NVIC_EnableIRQ(EINT0_IRQn); /* enable Button interrupts			*/
     score = 0;
+    // delete score
     GUI_Text(7, 160, (unsigned char *)"        ", Black, Black);
     draw_score(score);
     GUI_Text(80, 140, (unsigned char *)"You lose", White, Black);
+    GUI_Text(38, 210, (unsigned char *)"Press Int0 to continue", White, Black);
     pause_game();
     delete_ball();
 }
@@ -124,16 +127,34 @@ void pause_game()
 
 void resume_game()
 {
-    GUI_Text(80, 140, (unsigned char *)"        ", White, Black);
     is_game_over = 0;
     enable_timer(0);
     ADC_resumed();
 }
 
+void start_game()
+{
+    //delete 'Press key1 to start"
+    GUI_Text(40, 140, (unsigned char *)"                   ", Black, Black);
+    ADC_init(); /* ADC Initialization	for paddle movement	*/
+    enable_timer(0);
+}
+
+void prepare_restart_game()
+{
+    // delete "You lose"
+    GUI_Text(80, 140, (unsigned char *)"        ", Black, Black);
+    // delete "Press Int0 to continue"
+    GUI_Text(38, 210, (unsigned char *)"                      ", Black, Black);
+    initialize_ball();
+    GUI_Text(40, 140, (unsigned char *)"Press Key1 to start", White, Black);
+}
+
 void restart_game()
 {
+    // delete "Press Key1 to start"
+    GUI_Text(40, 140, (unsigned char *)"                   ", White, Black);
     resume_game();
-    initialize_ball();
 }
 
 void play_sound(uint16_t k)

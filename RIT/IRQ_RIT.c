@@ -51,8 +51,7 @@ void RIT_IRQHandler(void)
 				}
 				else // if I'm starting the game the first time
 				{
-					ADC_init(); /* ADC Initialization	for paddle movement	*/
-					enable_timer(0);
+					start_game();
 				}
 				break;
 			default:
@@ -112,6 +111,7 @@ void RIT_IRQHandler(void)
 				{
 				case 2: // RIT is always on due to adc, so i wait 2*50ms to execute button action
 					key0_pressed_once = 1;
+					prepare_restart_game();
 					break;
 				default:
 					break;
